@@ -56,15 +56,23 @@ VALUES ('lobster mac n cheese', 1200, 'side'),
 ##### Write queries for the following:
 
 1. What's the total revenue for all items?
+    SELECT SUM(revenue) FROM items;
 1. What's the average revenue for all items?
+    SELECT AVG(revenue) FROM items;
 1. What's the minimum revenue for all items?
+    SELECT MIN(revenue) FROM items;
 1. What's the maximum revenue for all items?
+    SELECT MAX(revenue) FROM items;
 1. What the count for items with a name?
+    SELECT COUNT(name) FROM items;
+
 
 Let's create an item that has all NULL values:
 `INSERT into items (name, revenue, course) VALUES (NULL, NULL, NULL);`
 
 Typically you `count` records in a table by counting on the `id` column, like `SELECT COUNT(id) FROM items;`. However, it's not necessary for a table to have an `id` column. What else can you pass to `count` and still get `5` as your result?
+
+SELECT Count(*) FROM items WHERE name is NULL UNION SELECT COUNT(*) FROM items WHERE name is NOT NULL;
 
 #### Building on Aggregate Functions
 
@@ -78,9 +86,13 @@ How can we get the revenue based on the course?
 ##### Write queries for the following:
 
 1. Return all `main` courses. Hint: What ActiveRecord method would you use to get this?
+  SELECT * FROM items where course = 'main';
 1. Return only the names of the `main` courses.
+  SELECT name FROM items where course = 'main';
 1. Return the min and max value for the `main` courses.
+  SELECT min(revenue), max(revenue) FROM items where course = 'main';
 1. What's the total revenue for all `main` courses?
+  SELECT SUM(revenue) FROM items where course = 'main';
 
 #### INNER JOINS
 
@@ -167,6 +179,9 @@ This is useful, but we probably don't need all of the information from both tabl
 * Can you get it to display only the name for the item and the name for the season?
 * Having two columns with the same name is confusing. Can you customize each heading using `AS`?
 
+    SELECT items.name as item_name, seasons.name as season_name FROM items INNER JOIN seasons ON items.season_id = seasons.id;
+
+
 It should look like this:
 
 ```sql
@@ -184,6 +199,8 @@ grilled cheese       | spring
 
 Now let's combine multiple `INNER JOIN`s to pull data from three tables `items`, `categories` and `item_categories`.
 
+SELECT items.name, categories.name FROM item_categories INNER JOIN items on items.id = item_categories.item_id INNER JOIN categories on categories.id = item_categories.cateogry_id WHERE items.name = 'arugula salad';
+
 * Write a query that pulls all the category names for `arugula salad`.
   Hint: Use multiple `INNER JOIN`s and a `WHERE` clause.
 
@@ -200,6 +217,8 @@ arugula salad | vegetarian
 ```
 
 Can you change the column headings?
+
+SELECT items.name as item_name, categories.name as category_name FROM item_categories INNER JOIN items on items.id = item_categories.item_id INNER JOIN categories on categories.id = item_categories.cateogry_id WHERE items.name = 'arugula salad';
 
 ```sql
 item_name     | category_name
@@ -275,14 +294,19 @@ id  |         name        | revenue | season_id | id |  name
 
 What do you think a `RIGHT OUTER JOIN` will do?
 
-* Write a query to test your guess.
-* Insert data into the right table that will not get returned on an `INNER JOIN`.
+Return just the 7 items, not the ones with NULL as season_id.
 
+* Write a query to test your guess.
+  SELECT * FROM items i RIGHT OUTER JOIN seasons s ON i.season_id = s.id;
+* Insert data into the right table that will not get returned on an `INNER JOIN`.
+  INSERT INTO seasons (name)
+  VALUES (NULL);
 ### Subqueries
 
 Sometimes you want to run a query based on the result of another query. Enter subqueries. Let's say I want to return all items with above average revenue. Two things need to happen:
 
 1. Calculate the average revenue.
+SELECT AVG(revenue) FROM items;
 1. Write a `WHERE` clause that returns the items that have a revenue
 greater than that average.
 
@@ -297,6 +321,8 @@ Subqueries need to be wrapped in parentheses. We can build more complex queries 
 SELECT * FROM items
 WHERE revenue > (Insert your query that calculates the avg inside these parentheses);
 ```
+
+ SELECT * FROM items WHERE revenue > (SELECT AVG(revenue) FROM items);
 
 The result should look like so...
 
@@ -314,10 +340,17 @@ id |         name         | revenue | season_id
 
 1. Without looking at the previous solution, write a `WHERE` clause that returns the items that have a revenue less than the average revenue.
 
+ SELECT * FROM items WHERE revenue < (SELECT AVG(revenue) FROM items);
+
 ### Additional Challenges
 
 * Write a query that returns the sum of all items that have a category of dinner.
+
+SELECT items.name, categories.name from item_categories INNER JOIN items on item_categories.item_id = items.id INNER JOIN categories on item_categories.cateogry_id = categories.id WHERE categories.name = 'dinner';
+
 * Write a query that returns the sum of all items for each category. The end result should look like this:
+SELECT SUM(revenue) as sum, categories.name as name FROM item_categories INNER JOIN items on item_categories.item_id = items.id INNER JOIN categories on item_categories.cateogry_id = categories.id GROUP BY categories.name;
+
 ```sql
 name       | sum
 -----------+------
@@ -330,7 +363,7 @@ side       | 2300
 
 ### Possible Solutions
 
-Some of these apply directly to challenges above. Most of them will need to be modified to acheive the challenge.
+Some of these apply directly to challenges above. Most of them will need to be modified to achieve the challenge.
 
 
 ```sql
