@@ -72,7 +72,9 @@ Let's create an item that has all NULL values:
 
 Typically you `count` records in a table by counting on the `id` column, like `SELECT COUNT(id) FROM items;`. However, it's not necessary for a table to have an `id` column. What else can you pass to `count` and still get `5` as your result?
 
-SELECT Count(*) FROM items WHERE name is NULL UNION SELECT COUNT(*) FROM items WHERE name is NOT NULL;
+SELECT COUNT(* ) FROM items;
+
+
 
 #### Building on Aggregate Functions
 
